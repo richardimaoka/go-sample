@@ -42,10 +42,10 @@ func handleSearch(w http.ResponseWriter, req *http.Request) {
 	if err == nil {
 		// The request has a timeout, so create a context that is
 		// canceled automatically when the timeout expires.
-		fmt.Printf("the request has timeout = %v", timeout)
+		fmt.Printf("the request has timeout = %v\n", timeout)
 		ctx, cancel = context.WithTimeout(context.Background(), timeout)
 	} else {
-		fmt.Printf("failed to get the request timeout with error = %v", err)
+		fmt.Printf("failed to get the request timeout with error = %v\n", err)
 		ctx, cancel = context.WithCancel(context.Background())
 	}
 	defer cancel() // Cancel ctx as soon as handleSearch returns.
