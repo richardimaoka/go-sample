@@ -1,5 +1,3 @@
-// +build OMIT
-
 // The server program issues Google search requests and demonstrates the use of
 // the go.net Context API. It serves on port 8080.
 //
@@ -18,6 +16,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/richardimaoka/go-sample/userip"
 )
 
 func main() {
@@ -30,7 +30,7 @@ func main() {
 // canceled after that duration elapses.
 func handleSearch(w http.ResponseWriter, req *http.Request) {
 	fmt.Println("handleSearch")
-	// ctx is the Context for this handler. Calling cancel closes the
+	// ctx is the Context for this handler. Calling cancel closes thec
 	// ctx.Done channel, which is the cancellation signal for requests
 	// started by this handler.
 	var (
@@ -49,5 +49,21 @@ func handleSearch(w http.ResponseWriter, req *http.Request) {
 		ctx, cancel = context.WithCancel(context.Background())
 	}
 	defer cancel() // Cancel ctx as soon as handleSearch returns.
+
+	query := req.FormValue("q")
+	if query == "" {
+		http.Error(w, "no query", http.StatusBadRequest)
+		return
+	}
+
+	// Store the user IP in ctx for use by code in other packages.
+	userIP, err := userip.FromRequest(req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	ctx = userip.NewContext(ctx, userIP)
+
+	fmt.Println(userIP)
 	fmt.Println(ctx)
 }
