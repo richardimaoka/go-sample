@@ -15,8 +15,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"text/template"
 	"time"
 
+	"github.com/richardimaoka/go-sample/google"
 	"github.com/richardimaoka/go-sample/userip"
 )
 
@@ -64,6 +66,40 @@ func handleSearch(w http.ResponseWriter, req *http.Request) {
 	}
 	ctx = userip.NewContext(ctx, userIP)
 
+	// Run the Google search and print the results.
+	start := time.Now()
+	results, err := google.Search(ctx, query)
+	elapsed := time.Since(start)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := resultsTemplate.Execute(w, struct {
+		Results          google.Results
+		Timeout, Elapsed time.Duration
+	}{
+		Results: results,
+		Timeout: timeout,
+		Elapsed: elapsed,
+	}); err != nil {
+		log.Print(err)
+		return
+	}
+
 	fmt.Println(userIP)
 	fmt.Println(ctx)
 }
+
+var resultsTemplate = template.Must(template.New("results").Parse(`
+<html>
+<head/>
+<body>
+  <ol>
+  {{range .Results}}
+    <li>{{.Title}} - <a href="{{.URL}}">{{.URL}}</a></li>
+  {{end}}
+  </ol>
+  <p>{{len .Results}} results in {{.Elapsed}}; timeout {{.Timeout}}</p>
+</body>
+</html>
+`))
