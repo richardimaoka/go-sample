@@ -65,10 +65,13 @@ func handleSearch(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	ctx = userip.NewContext(ctx, userIP)
+	fmt.Printf("userIP = %v\n", userIP)
 
 	// Run the Google search and print the results.
 	start := time.Now()
+	fmt.Println("starting google search")
 	results, err := google.Search(ctx, query)
+	fmt.Println(results)
 	elapsed := time.Since(start)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
