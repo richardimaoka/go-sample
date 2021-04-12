@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 )
 
 type Size int
@@ -13,6 +14,18 @@ const (
 	Small
 	Large
 )
+
+func (s *Size) UnmarshalTesxt(text []byte) error {
+	switch strings.ToLower(string(text)) {
+	default:
+		*s = Unrecognized
+	case "small":
+		*s = Small
+	case "large":
+		*s = Large
+	}
+	return nil
+}
 
 func (s Size) MarshalText() ([]byte, error) {
 	var name string
@@ -28,8 +41,7 @@ func (s Size) MarshalText() ([]byte, error) {
 }
 
 func main() {
-	// blob := `["small","regular","large","unrecognized","small","normal","small","large"]`
-	blob := `[1,2,3]`
+	blob := `["small","regular","large","unrecognized","small","normal","small","large"]`
 	var inventory []Size
 	if err := json.Unmarshal([]byte(blob), &inventory); err != nil {
 		log.Fatal(err)
