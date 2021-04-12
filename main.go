@@ -15,7 +15,8 @@ const (
 	Large
 )
 
-func (s *Size) UnmarshalTesxt(text []byte) error {
+func (s *Size) UnmarshalText(text []byte) error {
+	fmt.Printf("%s\n", text)
 	switch strings.ToLower(string(text)) {
 	default:
 		*s = Unrecognized
