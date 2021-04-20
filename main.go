@@ -17,11 +17,11 @@ import (
 
 func main() {
 
-	bolB, _ := json.Marshal(1)
+	bolB, _ := json.Marshal("aaaa")
 	fmt.Println(string(bolB))
 
-	// intB, _ := json.Marshal(1)
-	// fmt.Println(string(intB))
+	intB, _ := json.Marshal(1)
+	fmt.Println(string(intB))
 
 	// fltB, _ := json.Marshal(2.34)
 	// fmt.Println(string(fltB))
