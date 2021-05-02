@@ -46,3 +46,40 @@ func (mr *MockFooMockRecorder) Bar(x interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Bar", reflect.TypeOf((*MockFoo)(nil).Bar), x)
 }
+
+// MockBar is a mock of Bar interface.
+type MockBar struct {
+	ctrl     *gomock.Controller
+	recorder *MockBarMockRecorder
+}
+
+// MockBarMockRecorder is the mock recorder for MockBar.
+type MockBarMockRecorder struct {
+	mock *MockBar
+}
+
+// NewMockBar creates a new mock instance.
+func NewMockBar(ctrl *gomock.Controller) *MockBar {
+	mock := &MockBar{ctrl: ctrl}
+	mock.recorder = &MockBarMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockBar) EXPECT() *MockBarMockRecorder {
+	return m.recorder
+}
+
+// Sub mocks base method.
+func (m *MockBar) Sub(y string) int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Sub", y)
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// Sub indicates an expected call of Sub.
+func (mr *MockBarMockRecorder) Sub(y interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sub", reflect.TypeOf((*MockBar)(nil).Sub), y)
+}
