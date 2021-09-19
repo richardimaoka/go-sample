@@ -28,5 +28,4 @@ func TestArea(t *testing.T) {
 			t.Errorf("got %g want %g", got, tt.want)
 		}
 	}
-
 }
