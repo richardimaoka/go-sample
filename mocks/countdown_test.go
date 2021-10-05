@@ -5,9 +5,6 @@ import (
 	"testing"
 )
 
-type Sleeper interface {
-	Sleep()
-}
 type SpySleeper struct {
 	Calls int
 }
