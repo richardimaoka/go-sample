@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("file.go") // For read access.
+	file, err := os.Open("main.go") // For read access.
 	if err != nil {
 		log.Fatal(err)
 	}
