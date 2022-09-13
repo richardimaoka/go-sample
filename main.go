@@ -1,32 +1,21 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"strconv"
-	"strings"
+	"io"
+	"log"
+	"os"
 )
 
 func main() {
-	// An artificial input source.
-	const input = "1234 5678 123 45 67901 234 567 890"
-	scanner := bufio.NewScanner(strings.NewReader(input))
-	// Create a custom split function by wrapping the existing ScanWords function.
-	split := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-		advance, token, err = bufio.ScanWords(data, atEOF)
-		if err == nil && token != nil {
-			_, err = strconv.ParseInt(string(token), 10, 32)
-		}
-		return
-	}
-	// Set the split function for the scanning operation.
-	scanner.Split(split)
-	// Validate the input
-	for scanner.Scan() {
-		fmt.Printf("%s\n", scanner.Text())
-	}
+	r, w := io.Pipe()
 
-	if err := scanner.Err(); err != nil {
-		fmt.Printf("Invalid input: %s", err)
+	go func() {
+		fmt.Fprint(w, "some io.Reader stream to be read\n")
+		w.Close()
+	}()
+
+	if _, err := io.Copy(os.Stdout, r); err != nil {
+		log.Fatal(err)
 	}
 }
