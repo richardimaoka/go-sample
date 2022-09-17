@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
+	"os"
 )
 
 type Message struct {
@@ -13,10 +13,26 @@ type Message struct {
 }
 
 func main() {
-	m := Message{"Alice", "Hello", 1294706395881547000}
-	b, err := json.Marshal(m)
+	type Genre struct {
+		Country string
+		Rock    string
+	}
+
+	type Music struct {
+		Genre Genre
+	}
+
+	resp := Music{
+		Genre: Genre{ // error on this line.
+			Country: "Taylor Swift",
+			Rock:    "Aimee",
+		},
+	}
+
+	js, err := json.Marshal(resp)
 	if err != nil {
 		log.Fatalf("cannot marshal")
 	}
-	fmt.Printf("%v\n", string(b))
+	os.Stdout.Write(js)
+
 }
