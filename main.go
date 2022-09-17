@@ -1,21 +1,22 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"os"
 )
 
+type Message struct {
+	Name string
+	Body string
+	Time int64
+}
+
 func main() {
-	r, w := io.Pipe()
-
-	go func() {
-		fmt.Fprint(w, "some io.Reader stream to be read\n")
-		w.Close()
-	}()
-
-	if _, err := io.Copy(os.Stdout, r); err != nil {
-		log.Fatal(err)
+	m := Message{"Alice", "Hello", 1294706395881547000}
+	b, err := json.Marshal(m)
+	if err != nil {
+		log.Fatalf("cannot marshal")
 	}
+	fmt.Printf("%v\n", string(b))
 }
