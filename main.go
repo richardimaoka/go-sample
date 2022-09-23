@@ -24,26 +24,15 @@ func main() {
 	}()
 
 	fmt.Println("Commencing countdown. Press return to abort.")
-	select {
-	case <-time.After(10 * time.Second):
-	case <-abort:
-		fmt.Println("aborted!!")
-		return
-	}
-	launch()
-
-	// tick := time.Tick(100 * time.Millisecond)
-	// for countdown := 10; countdown > 0; countdown-- {
-	// 	fmt.Println(countdown)
-	// 	<-tick
-	// }
-
-	ch := make(chan int, 1)
-	for i := 0; i < 10; i++ {
+	tick := time.Tick(100 * time.Millisecond)
+	for countdown := 10; countdown > 0; countdown-- {
+		fmt.Println(countdown)
 		select {
-		case x := <-ch:
-			fmt.Println(x) //"0" "2" "4" "6" "8"
-		case ch <- i:
+		case <-tick:
+		case <-abort:
+			fmt.Println("aborted!!")
+			return
 		}
 	}
+	launch()
 }
