@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"time"
 )
 
@@ -16,11 +17,23 @@ func launch() {
 }
 
 func main() {
-	fmt.Println("Commencing countdown")
-	tick := time.Tick(100 * time.Millisecond)
-	for countdown := 10; countdown > 0; countdown-- {
-		fmt.Println(countdown)
-		<-tick
+	abort := make(chan struct{})
+	go func() {
+		os.Stdin.Read(make([]byte, 1)) // read 1 byte
+		abort <- struct{}{}
+	}()
+
+	fmt.Println("Commencing countdown. Press return to abort.")
+	select {
+	case <-time.After(10 * time.Second):
+	case <-abort:
+		fmt.Println("aborted!!")
+		return
 	}
+	// tick := time.Tick(100 * time.Millisecond)
+	// for countdown := 10; countdown > 0; countdown-- {
+	// 	fmt.Println(countdown)
+	// 	<-tick
+	// }
 	launch()
 }
