@@ -18,33 +18,32 @@ type TerminalNode struct {
 }
 
 func (t *TerminalNode) UnmarshalJSON(b []byte) error {
-	var temp struct {
+	// unmarshal non-union fields first
+	var partial struct {
 		Index *int `json:"index"`
 	}
-	err := json.Unmarshal(b, &temp)
+
+	err := json.Unmarshal(b, &partial)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
-	t.Index = temp.Index
+	t.Index = partial.Index
 
+	// then, unmarshal union fields
 	var unmarshald map[string]interface{}
 	err = json.Unmarshal(b, &unmarshald)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
 	bytes, err := json.Marshal(unmarshald["content"])
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
 	content, err := GetTerminalElementFromBytes(bytes)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 	t.Content = content
