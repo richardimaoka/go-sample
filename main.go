@@ -1,28 +1,25 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"image"
-	_ "image/jpeg"
-	_ "image/png"
-	"os"
 )
 
-//https://gist.github.com/sergiotapia/7882944
 func main() {
-	width, height := getImageDimension("images/2mhQeVA6_400x400.jpg")
-	fmt.Println("Width:", width, "Height:", height)
-}
 
-func getImageDimension(imagePath string) (int, int) {
-	file, err := os.Open(imagePath)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-	}
+	wordPtr := flag.String("word", "foo", "a string")
 
-	image, _, err := image.DecodeConfig(file)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s: %v\n", imagePath, err)
-	}
-	return image.Width, image.Height
+	numbPtr := flag.Int("numb", 42, "an int")
+	forkPtr := flag.Bool("fork", false, "a bool")
+
+	var svar string
+	flag.StringVar(&svar, "svar", "bar", "a string var")
+
+	flag.Parse()
+
+	fmt.Println("word:", *wordPtr)
+	fmt.Println("numb:", *numbPtr)
+	fmt.Println("fork:", *forkPtr)
+	fmt.Println("svar:", svar)
+	fmt.Println("tail:", flag.Args())
 }
