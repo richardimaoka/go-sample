@@ -3,23 +3,38 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 )
 
 func main() {
 
-	wordPtr := flag.String("word", "foo", "a string")
+	fooCmd := flag.NewFlagSet("foo", flag.ExitOnError)
+	fooEnable := fooCmd.Bool("enable", false, "enable")
+	fooName := fooCmd.String("name", "", "name")
 
-	numbPtr := flag.Int("numb", 42, "an int")
-	forkPtr := flag.Bool("fork", false, "a bool")
+	barCmd := flag.NewFlagSet("bar", flag.ExitOnError)
+	barLevel := barCmd.Int("level", 0, "level")
 
-	var svar string
-	flag.StringVar(&svar, "svar", "bar", "a string var")
+	if len(os.Args) < 2 {
+		fmt.Println("expected 'foo' or 'bar' subcommands")
+		os.Exit(1)
+	}
 
-	flag.Parse()
+	switch os.Args[1] {
 
-	fmt.Println("word:", *wordPtr)
-	fmt.Println("numb:", *numbPtr)
-	fmt.Println("fork:", *forkPtr)
-	fmt.Println("svar:", svar)
-	fmt.Println("tail:", flag.Args())
+	case "foo":
+		fooCmd.Parse(os.Args[2:])
+		fmt.Println("subcommand 'foo'")
+		fmt.Println("  enable:", *fooEnable)
+		fmt.Println("  name:", *fooName)
+		fmt.Println("  tail:", fooCmd.Args())
+	case "bar":
+		barCmd.Parse(os.Args[2:])
+		fmt.Println("subcommand 'bar'")
+		fmt.Println("  level:", *barLevel)
+		fmt.Println("  tail:", barCmd.Args())
+	default:
+		fmt.Println("expected 'foo' or 'bar' subcommands")
+		os.Exit(1)
+	}
 }
