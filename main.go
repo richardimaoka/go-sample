@@ -1,40 +1,40 @@
 package main
 
 import (
-	"flag"
+	"bytes"
 	"fmt"
+	"log"
 	"os"
+
+	"log/slog"
 )
 
 func main() {
 
-	fooCmd := flag.NewFlagSet("foo", flag.ExitOnError)
-	fooEnable := fooCmd.Bool("enable", false, "enable")
-	fooName := fooCmd.String("name", "", "name")
+	log.Println("standard logger")
 
-	barCmd := flag.NewFlagSet("bar", flag.ExitOnError)
-	barLevel := barCmd.Int("level", 0, "level")
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
+	log.Println("with micro")
 
-	if len(os.Args) < 2 {
-		fmt.Println("expected 'foo' or 'bar' subcommands")
-		os.Exit(1)
-	}
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	log.Println("with file/line")
 
-	switch os.Args[1] {
+	mylog := log.New(os.Stdout, "my:", log.LstdFlags)
+	mylog.Println("from mylog")
 
-	case "foo":
-		fooCmd.Parse(os.Args[2:])
-		fmt.Println("subcommand 'foo'")
-		fmt.Println("  enable:", *fooEnable)
-		fmt.Println("  name:", *fooName)
-		fmt.Println("  tail:", fooCmd.Args())
-	case "bar":
-		barCmd.Parse(os.Args[2:])
-		fmt.Println("subcommand 'bar'")
-		fmt.Println("  level:", *barLevel)
-		fmt.Println("  tail:", barCmd.Args())
-	default:
-		fmt.Println("expected 'foo' or 'bar' subcommands")
-		os.Exit(1)
-	}
+	mylog.SetPrefix("ohmy:")
+	mylog.Println("from mylog")
+
+	var buf bytes.Buffer
+	buflog := log.New(&buf, "buf:", log.LstdFlags)
+
+	buflog.Println("hello")
+
+	fmt.Print("from buflog:", buf.String())
+
+	jsonHandler := slog.NewJSONHandler(os.Stderr, nil)
+	myslog := slog.New(jsonHandler)
+	myslog.Info("hi there")
+
+	myslog.Info("hello again", "key", "val", "age", 25)
 }
