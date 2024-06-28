@@ -1,50 +1,43 @@
+// Option Pattern についてのサンプルです。
+//
+// #REFERENCES
+//   - https://dev.to/c4r4x35/options-pattern-in-golang-10ph
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
 
-type Me struct {
-	V1 int
-	V2 string
-	V3 int
-	V4 string
-}
-
-type Option func(me *Me)
-
-func New(v1 int, v2 string, opts ...Option) *Me {
-	me := new(Me)
-
-	me.V1 = v1
-	me.V2 = v2
-	me.V3 = -1
-	me.V4 = "unknown"
-
-	for _, opt := range opts {
-		opt(me)
-	}
-
-	return me
-}
-
-func WithV3(v int) Option {
-	return func(me *Me) {
-		me.V3 = v
-	}
-}
-
-func WithV4(v string) Option {
-	return func(me *Me) {
-		me.V4 = v
-	}
-}
+	"github.com/richardimaoka/go-sandbox/config"
+)
 
 func main() {
-	m1 := New(1, "hello")
-	fmt.Printf("%v\n", m1)
+	err := run()
+	if err != nil {
+		panic(err)
+	}
+}
 
-	m2 := New(2, "world", WithV4("golang"))
-	fmt.Printf("%v\n", m2)
+func run() error {
+	var (
+		c *config.Config
+	)
 
-	m3 := New(3, "naruhodo", WithV3(10))
-	fmt.Printf("%v\n", m3)
+	c = config.New(
+		"172.16.0.111",
+		8888,
+		// Add extra options with config.WithXxx
+		config.WithRecvTimeout(30*time.Second),
+		config.WithSendTimeout(5*time.Second),
+	)
+	fmt.Println(c)
+
+	c = config.New(
+		"localhost",
+		12345,
+		// You can omit options and they take the defaults
+	)
+	fmt.Println(c)
+
+	return nil
 }
