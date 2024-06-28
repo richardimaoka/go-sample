@@ -1,40 +1,38 @@
 package main
 
-import (
-	"bytes"
-	"fmt"
-	"log"
-	"os"
+import "fmt"
 
-	"log/slog"
+type (
+	Me struct {
+		V1 int
+		V2 string
+		V3 int
+		V4 string
+	}
 )
 
+func New(v1 int, v2 string, opts ...func(me *Me)) *Me {
+	me := new(Me)
+
+	me.V1 = v1
+	me.V2 = v2
+	me.V3 = -1
+	me.V4 = "unknown"
+
+	for _, opt := range opts {
+		opt(me)
+	}
+
+	return me
+}
+
 func main() {
+	m1 := New(1, "hello")
+	fmt.Printf("%v\n", m1)
 
-	log.Println("standard logger")
+	m2 := New(2, "world", func(me *Me) { me.V4 = "golang" })
+	fmt.Printf("%v\n", m2)
 
-	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
-	log.Println("with micro")
-
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.Println("with file/line")
-
-	mylog := log.New(os.Stdout, "my:", log.LstdFlags)
-	mylog.Println("from mylog")
-
-	mylog.SetPrefix("ohmy:")
-	mylog.Println("from mylog")
-
-	var buf bytes.Buffer
-	buflog := log.New(&buf, "buf:", log.LstdFlags)
-
-	buflog.Println("hello")
-
-	fmt.Print("from buflog:", buf.String())
-
-	jsonHandler := slog.NewJSONHandler(os.Stderr, nil)
-	myslog := slog.New(jsonHandler)
-	myslog.Info("hi there")
-
-	myslog.Info("hello again", "key", "val", "age", 25)
+	m3 := New(3, "naruhodo", func(me *Me) { me.V2 = "golang" })
+	fmt.Printf("%v\n", m3)
 }
