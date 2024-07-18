@@ -23,6 +23,7 @@ func run(ctx context.Context, l net.Listener) error {
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
 		// ListenAndServeメソッドではなく、Serveメソッドに変更する
+		fmt.Println("serving at ", l.Addr().String())
 		if err := s.Serve(l); err != nil &&
 			// http.ErrServerClosed は
 			// http.Server.Shutdown() が正常に終了したことを示すので異常ではない
