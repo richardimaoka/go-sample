@@ -1,50 +1,44 @@
-// Option Pattern についてのサンプルです。
-//
-// #REFERENCES
-//   - https://dev.to/c4r4x35/options-pattern-in-golang-10ph
 package main
 
 import (
 	"context"
 	"fmt"
+	"log"
+	"net/http"
+
+	"golang.org/x/sync/errgroup"
 )
 
-type TraceID string
-type AnotherID string
-
-const ZeroTraceID = ""
-
-type traceIDKey struct{}
-type anotherIDKey struct{}
-
-func SetTraceID(ctx context.Context, tid TraceID) context.Context {
-	return context.WithValue(ctx, traceIDKey{}, tid)
-}
-func GetTraceID(ctx context.Context) TraceID {
-	if v, ok := ctx.Value(traceIDKey{}).(TraceID); ok {
-		return v
+func run(ctx context.Context) error {
+	s := &http.Server{
+		Addr: ":18080",
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(w, "Hello, %s!", r.URL.Path[1:])
+		}),
 	}
-	return ZeroTraceID
-}
-
-func SetAnotherID(ctx context.Context, aid AnotherID) context.Context {
-	return context.WithValue(ctx, anotherIDKey{}, aid)
-}
-func GetAnotherID(ctx context.Context) AnotherID {
-	if v, ok := ctx.Value(anotherIDKey{}).(AnotherID); ok {
-		return v
+	eg, ctx := errgroup.WithContext(ctx)
+	// 別ゴルーチンでHTTPサーバーを起動する
+	eg.Go(func() error {
+		// http.ErrServerClosed は
+		// http.Server.Shutdown() が正常に終了したことを示すので異常ではない。
+		if err := s.ListenAndServe(); err != nil &&
+			err != http.ErrServerClosed {
+			log.Printf("failed to close: %+v", err)
+			return err
+		}
+		return nil
+	})
+	// チャネルからの通知（終了通知）を待機する
+	<-ctx.Done()
+	if err := s.Shutdown(context.Background()); err != nil {
+		log.Printf("failed to shutdown: %+v", err)
 	}
-	return ZeroTraceID
+	// Goメソッドで起動した別ゴルーチンの終了を待つ。
+	return eg.Wait()
 }
 
 func main() {
-	ctx := context.Background()
-	fmt.Printf("trace id = %q\n", GetTraceID(ctx))
-	ctx = SetTraceID(ctx, "test-id")
-	fmt.Printf("trace id = %q\n", GetTraceID(ctx))
-
-	fmt.Printf("another id = %q\n", GetAnotherID(ctx))
-	ctx = SetAnotherID(ctx, "tessssst-id")
-	fmt.Printf("another id = %q\n", GetAnotherID(ctx))
-	fmt.Printf("trace id = %q\n", GetTraceID(ctx))
+	if err := run(context.Background()); err != nil {
+		log.Printf("failed to terminate server: %v", err)
+	}
 }
