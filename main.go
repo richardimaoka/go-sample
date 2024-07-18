@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"golang.org/x/sync/errgroup"
 )
 
+// Common pattern : accept context.Context as the 1st argument.
 func run(ctx context.Context) error {
 	s := &http.Server{
 		Addr: ":18080",
@@ -21,6 +23,7 @@ func run(ctx context.Context) error {
 	eg.Go(func() error {
 		// http.ErrServerClosed は
 		// http.Server.Shutdown() が正常に終了したことを示すので異常ではない。
+		fmt.Println("running HTTP server")
 		if err := s.ListenAndServe(); err != nil &&
 			err != http.ErrServerClosed {
 			log.Printf("failed to close: %+v", err)
@@ -28,8 +31,11 @@ func run(ctx context.Context) error {
 		}
 		return nil
 	})
+
+	fmt.Println("waiting for a done notification")
 	// チャネルからの通知（終了通知）を待機する
 	<-ctx.Done()
+	fmt.Println("received a done notification")
 	if err := s.Shutdown(context.Background()); err != nil {
 		log.Printf("failed to shutdown: %+v", err)
 	}
@@ -38,7 +44,14 @@ func run(ctx context.Context) error {
 }
 
 func main() {
-	if err := run(context.Background()); err != nil {
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		time.Sleep(5 * time.Second)
+		cancel()
+		fmt.Println("canceled from a go routine")
+	}()
+
+	if err := run(ctx); err != nil {
 		log.Printf("failed to terminate server: %v", err)
 	}
 }
