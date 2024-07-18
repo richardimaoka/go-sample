@@ -4,27 +4,28 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
-	"time"
+	"os"
 
 	"golang.org/x/sync/errgroup"
 )
 
 // Common pattern : accept context.Context as the 1st argument.
-func run(ctx context.Context) error {
+func run(ctx context.Context, l net.Listener) error {
 	s := &http.Server{
-		Addr: ":18080",
+		// 引数で受け取ったnet.Listenerを利用するので、
+		// Addrフィールドは指定しない
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "Hello, %s!", r.URL.Path[1:])
 		}),
 	}
 	eg, ctx := errgroup.WithContext(ctx)
-	// 別ゴルーチンでHTTPサーバーを起動する
 	eg.Go(func() error {
-		// http.ErrServerClosed は
-		// http.Server.Shutdown() が正常に終了したことを示すので異常ではない。
-		fmt.Println("running HTTP server")
-		if err := s.ListenAndServe(); err != nil &&
+		// ListenAndServeメソッドではなく、Serveメソッドに変更する
+		if err := s.Serve(l); err != nil &&
+			// http.ErrServerClosed は
+			// http.Server.Shutdown() が正常に終了したことを示すので異常ではない
 			err != http.ErrServerClosed {
 			log.Printf("failed to close: %+v", err)
 			return err
@@ -44,14 +45,17 @@ func run(ctx context.Context) error {
 }
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	go func() {
-		time.Sleep(5 * time.Second)
-		cancel()
-		fmt.Println("canceled from a go routine")
-	}()
+	if len(os.Args) != 2 {
+		log.Printf("need port number\n")
+		os.Exit(1)
+	}
+	p := os.Args[1]
+	l, err := net.Listen("tcp", ":"+p)
+	if err != nil {
+		log.Fatalf("failed to listen port %s: %v", p, err)
+	}
 
-	if err := run(ctx); err != nil {
+	if err := run(context.Background(), l); err != nil {
 		log.Printf("failed to terminate server: %v", err)
 	}
 }
