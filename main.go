@@ -30,9 +30,3 @@ func run(ctx context.Context) error {
 	s := NewServer(l, mux)
 	return s.Run(ctx)
 }
-
-func main() {
-	if err := run(context.Background()); err != nil {
-		log.Printf("failed to terminate server: %v", err)
-	}
-}
