@@ -30,7 +30,10 @@ func TestRun(t *testing.T) {
 	// GET request
 	//
 	in := "message"
-	rsp, err := http.Get("http://localhost:18080/" + in)
+	url := fmt.Sprintf("http://%s/%s", l.Addr().String(), in)
+	// どんなポート番号でリッスンしているのか確認
+	t.Logf("try request to %q", url)
+	rsp, err := http.Get(url)
 	if err != nil {
 		t.Errorf("failed to get: %+v", err)
 	}
