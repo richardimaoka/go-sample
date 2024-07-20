@@ -6,6 +6,10 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/richardimaoka/go-sandbox/config"
 	"golang.org/x/sync/errgroup"
@@ -13,6 +17,15 @@ import (
 
 // Common pattern : accept context.Context as the 1st argument.
 func run(ctx context.Context) error {
+	//
+	// Handling SIGNALs
+	//
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	/*
+	 * Load config for env name and port
+	 */
 	cfg, err := config.New()
 	if err != nil {
 		return err
@@ -29,6 +42,8 @@ func run(ctx context.Context) error {
 		// 引数で受け取ったnet.Listenerを利用するので、
 		// Addrフィールドは指定しない
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// コマンドラインで実験するため
+			time.Sleep(5 * time.Second)
 			fmt.Fprintf(w, "Hello, %s!", r.URL.Path[1:])
 		}),
 	}
