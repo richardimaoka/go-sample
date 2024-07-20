@@ -12,8 +12,6 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	t.Skip("refactoring in progress")
-
 	//
 	// Run the server
 	//
@@ -24,8 +22,13 @@ func TestRun(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	eg, ctx := errgroup.WithContext(ctx)
+	mux := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello, %s!", r.URL.Path[1:])
+	})
+
 	eg.Go(func() error {
-		return run(ctx)
+		s := NewServer(l, mux)
+		return s.Run(ctx)
 	})
 
 	//

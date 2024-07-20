@@ -58,6 +58,8 @@ func run(ctx context.Context) error {
 			log.Printf("failed to close: %+v", err)
 			return err
 		}
+
+		log.Printf("server finished")
 		return nil
 	})
 
