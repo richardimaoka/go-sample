@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	Tasks       = &TaskStore{Tasks: map[entity.TaskID]*entity.Task{}}
+	Tasks = &TaskStore{Tasks: map[entity.TaskID]*entity.Task{}}
+
 	ErrNotFound = errors.New("not found")
 )
 
@@ -22,6 +23,13 @@ func (ts *TaskStore) Add(t *entity.Task) (entity.TaskID, error) {
 	t.ID = ts.LastID
 	ts.Tasks[t.ID] = t
 	return t.ID, nil
+}
+
+func (ts *TaskStore) Get(id entity.TaskID) (*entity.Task, error) {
+	if ts, ok := ts.Tasks[id]; ok {
+		return ts, nil
+	}
+	return nil, ErrNotFound
 }
 
 // All はソート済みのタスク一覧を返す
