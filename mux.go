@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/go-playground/validator"
+	"github.com/go-playground/validator/v10"
 	"github.com/richardimaoka/go-sandbox/handler"
 	"github.com/richardimaoka/go-sandbox/store"
 )
