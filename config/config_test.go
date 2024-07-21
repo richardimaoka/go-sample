@@ -10,7 +10,6 @@ func TestNew(t *testing.T) {
 	t.Setenv("PORT", fmt.Sprint(wantPort))
 
 	got, err := New()
-
 	if err != nil {
 		t.Fatalf("cannot create config: %v", err)
 	}
