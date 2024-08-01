@@ -21,10 +21,19 @@ import (
 	"net/http"
 )
 
+type MyHandler struct {
+}
+
+func (h *MyHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	res.Write([]byte("hello"))
+}
+
 func main() {
+	handler := MyHandler{}
+
 	server := http.Server{
 		Addr:    "localhost:8080",
-		Handler: nil,
+		Handler: &handler,
 	}
 	server.ListenAndServe()
 }
