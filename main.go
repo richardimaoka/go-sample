@@ -57,23 +57,24 @@ func main() {
 		IPAddresses:  []net.IP{net.ParseIP("127.0.0.1")},
 	}
 
-	pk, _ := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, _ := rsa.GenerateKey(rand.Reader, 2048)
 
-	derBytes, _ := x509.CreateCertificate(rand.Reader, &template, &template, &pk.PublicKey, pk)
+	derBytes, _ := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
 	certOut, _ := os.Create("cert.pem")
 	pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 	certOut.Close()
 
 	keyOut, _ := os.Create("key.pem")
-	pem.Encode(keyOut, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(pk)})
+	pem.Encode(keyOut, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)})
 
+	handler := MyHandler{}
+
+	server := http.Server{
+		Addr:    "localhost:8080",
+		Handler: &handler,
+	}
+
+	fmt.Println("bringing up server")
+	server.ListenAndServeTLS("cert.pem", "key.pem")
 	fmt.Println("finished")
-	// handler := MyHandler{}
-
-	// server := http.Server{
-	// 	Addr:    "localhost:8080",
-	// 	Handler: &handler,
-	// }
-
-	// server.ListenAndServeTLS("cert.pem", "key.pem")
 }
