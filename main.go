@@ -35,5 +35,6 @@ func main() {
 		Addr:    "localhost:8080",
 		Handler: &handler,
 	}
-	server.ListenAndServe()
+
+	server.ListenAndServeTLS("cert.pem", "key.pem")
 }
