@@ -1,91 +1,29 @@
-// リスト3.1
-/* 次のコマンドで実行できます。
-   （Windowsの場合、sudo は不要です）
-  $ sudo go run server.go
-
- * ほかのウェブサーバが動いているときは、すぐに終了してしまいます。
- * 起動しておいてブラウザに http://localhost/ を入力すると "404 page not found" が表示されます。
-   それ以上の機能はありません。
-	 終了するには control+C を押してください。
-
-なお、次のコマンドを実行すると01simplest という実行ファイルができます。
-  $ go build
-その後で次のコマンドを実行するとサーバが起動します。
- sudo ./01simplest
-
-*/
-
+// リスト3.10
 package main
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
-	"crypto/x509/pkix"
-	"encoding/pem"
 	"fmt"
-	"math/big"
-	"net"
 	"net/http"
-	"os"
-	"time"
+	"reflect"
+	"runtime"
 )
 
-type HelloHandler struct {
+func hello(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hello!")
 }
 
-func (h *HelloHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	res.Write([]byte("hello"))
-}
-
-type WorldHandler struct {
-}
-
-func (h *WorldHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	res.Write([]byte("world"))
+func log(h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		name := runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name()
+		fmt.Println("ハンドラ関数が呼び出されました - " + name)
+		h(w, r)
+	}
 }
 
 func main() {
-	max := new(big.Int).Lsh(big.NewInt(1), 128)
-	serialNumber, _ := rand.Int(rand.Reader, max)
-	subject := pkix.Name{
-		Organization:       []string{"Manning Publications Co."},
-		OrganizationalUnit: []string{"Books"},
-		CommonName:         "Go Web Programming",
-	}
-
-	template := x509.Certificate{
-		SerialNumber: serialNumber,
-		Subject:      subject,
-		NotBefore:    time.Now(),
-		NotAfter:     time.Now().Add(365 * 24 * time.Hour),
-		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		IPAddresses:  []net.IP{net.ParseIP("127.0.0.1")},
-	}
-
-	privateKey, _ := rsa.GenerateKey(rand.Reader, 2048)
-
-	derBytes, _ := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
-	certOut, _ := os.Create("cert.pem")
-	pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
-	certOut.Close()
-
-	keyOut, _ := os.Create("key.pem")
-	pem.Encode(keyOut, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)})
-
-	hello := HelloHandler{} // helloはハンドラ（http.Handler）。ServeHTTPを持っているので
-	world := WorldHandler{}
-
 	server := http.Server{
 		Addr: "127.0.0.1:8080",
-		// Handlerは指定しない -> DefaultServeMuxをハンドラとして利用
 	}
-
-	http.Handle("/hello", &hello) // ハンドラhelloをDefaultServeMuxに登録
-	http.Handle("/world", &world)
-
-	fmt.Println("bringing up server")
-	server.ListenAndServeTLS("cert.pem", "key.pem")
-	fmt.Println("finished")
+	http.HandleFunc("/hello", log(hello))
+	server.ListenAndServe()
 }
