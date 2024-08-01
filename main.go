@@ -24,6 +24,6 @@ import (
 
 func main() {
 	fmt.Println("running")
-	http.ListenAndServe("", nil)
+	http.ListenAndServe(":8080", nil)
 	fmt.Println("finished")
 }
