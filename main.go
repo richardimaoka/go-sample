@@ -31,11 +31,18 @@ import (
 	"time"
 )
 
-type MyHandler struct {
+type HelloHandler struct {
 }
 
-func (h *MyHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+func (h *HelloHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	res.Write([]byte("hello"))
+}
+
+type WorldHandler struct {
+}
+
+func (h *WorldHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	res.Write([]byte("world"))
 }
 
 func main() {
@@ -67,12 +74,16 @@ func main() {
 	keyOut, _ := os.Create("key.pem")
 	pem.Encode(keyOut, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)})
 
-	handler := MyHandler{}
+	hello := HelloHandler{} // helloはハンドラ（http.Handler）。ServeHTTPを持っているので
+	world := WorldHandler{}
 
 	server := http.Server{
-		Addr:    "localhost:8080",
-		Handler: &handler,
+		Addr: "127.0.0.1:8080",
+		// Handlerは指定しない -> DefaultServeMuxをハンドラとして利用
 	}
+
+	http.Handle("/hello", &hello) // ハンドラhelloをDefaultServeMuxに登録
+	http.Handle("/world", &world)
 
 	fmt.Println("bringing up server")
 	server.ListenAndServeTLS("cert.pem", "key.pem")
