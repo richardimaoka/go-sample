@@ -18,12 +18,13 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 )
 
 func main() {
-	fmt.Println("running")
-	http.ListenAndServe(":8080", nil)
-	fmt.Println("finished")
+	server := http.Server{
+		Addr:    "localhost:8080",
+		Handler: nil,
+	}
+	server.ListenAndServe()
 }
