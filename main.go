@@ -8,7 +8,7 @@ import (
 
 func process(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	a := r.Form["post"]
+	a := r.PostForm["post"]
 	fmt.Println(a)
 	fmt.Fprintln(w, r.Form)
 }
