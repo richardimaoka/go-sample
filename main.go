@@ -1,16 +1,14 @@
-// リスト4.4
+// リスト5.2
 package main
 
 import (
-	"fmt"
+	"html/template"
 	"net/http"
 )
 
 func process(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	a := r.PostForm["post"]
-	fmt.Println(a)
-	fmt.Fprintln(w, r.Form)
+	t, _ := template.ParseFiles("tmpl.html")
+	t.Execute(w, "Hello World!")
 }
 
 func main() {
